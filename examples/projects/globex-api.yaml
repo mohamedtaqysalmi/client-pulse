@@ -1,0 +1,10 @@
+name: Globex order API
+client: Globex Logistics
+status: active
+next_milestone: Staging deploy
+deadline: 2026-03-12
+blockers:
+  - No access to the staging server yet
+  - Payment sandbox keys not received
+hours_estimated: 80
+hours_spent: 92

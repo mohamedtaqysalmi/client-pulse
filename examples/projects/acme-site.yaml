@@ -1,0 +1,9 @@
+name: Acme website refresh
+client: Acme Bakery
+status: active
+next_milestone: Homepage review call
+deadline: 2026-03-20
+blockers:
+  - Waiting for product photos from the client
+hours_estimated: 40
+hours_spent: 31.5
