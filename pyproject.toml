@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "client-pulse"
-version = "0.0.1"
+version = "0.1.0"
 description = "CLI to track several client projects from YAML files: deadlines, blockers, hours and a weekly Markdown report."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -13,7 +13,7 @@ license-files = ["LICENSE"]
 authors = [{ name = "Mohamed-Taqy Salmi" }]
 keywords = ["cli", "freelance", "project-tracking", "yaml"]
 classifiers = [
-    "Development Status :: 1 - Planning",
+    "Development Status :: 3 - Alpha",
     "Environment :: Console",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",

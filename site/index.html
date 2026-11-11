@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>client-pulse — weekly status from YAML project files</title>
+    <meta
+      name="description"
+      content="CLI that turns one YAML file per client project into overdue lists, blockers, and a weekly Markdown report. Optional webhook and Telegram post."
+    />
+    <meta property="og:title" content="client-pulse" />
+    <meta
+      property="og:description"
+      content="Track several client projects from YAML: deadlines, blockers, hours, weekly report."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://mohamedtaqysalmi.github.io/client-pulse/" />
+    <meta property="og:image" content="https://mohamedtaqysalmi.github.io/client-pulse/og.svg" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#sample-report">Skip to sample report</a>
+
+    <header class="top">
+      <div class="top-inner">
+        <span class="pulse-dot" aria-hidden="true"></span>
+        <strong class="logo">client-pulse</strong>
+        <nav aria-label="Primary">
+          <a href="#sample-report">Sample report</a>
+          <a href="#schema">YAML schema</a>
+          <a href="https://github.com/mohamedtaqysalmi/client-pulse">GitHub</a>
+        </nav>
+      </div>
+    </header>
+
+    <section class="hero" aria-label="Introduction">
+      <div class="hero-grid" aria-hidden="true"></div>
+      <div class="hero-inner">
+        <p class="eyebrow">Freelance project tracker · YAML in, Markdown out</p>
+        <h1>client-pulse</h1>
+        <p class="tagline">
+          One YAML file per client project. List what is late, what is blocked, and
+          post a weekly report to a webhook or Telegram.
+        </p>
+        <div class="cta-row">
+          <a class="btn primary" href="#sample-report">See the sample report</a>
+          <a
+            class="btn ghost"
+            href="https://github.com/mohamedtaqysalmi/client-pulse#quickstart"
+            >Install from GitHub</a
+          >
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <section class="section" id="sample-report" aria-labelledby="report-title">
+        <div class="section-head">
+          <h2 id="report-title">Sample weekly report</h2>
+          <p>
+            Rendered from the five fictional projects in
+            <code>examples/projects</code>, fixed to
+            <time datetime="2026-03-16">2026-03-16</time>. Same Markdown the CLI
+            prints (and can POST).
+          </p>
+        </div>
+
+        <article class="report" aria-label="Weekly report for 2026-03-16">
+          <header class="report-banner">
+            <div>
+              <p class="report-kicker">Week of</p>
+              <h3>16 Mar 2026</h3>
+            </div>
+            <ul class="stats" aria-label="Summary counts">
+              <li><span>4</span> open</li>
+              <li class="late"><span>1</span> overdue</li>
+              <li><span>3</span> blocked</li>
+            </ul>
+          </header>
+
+          <div class="report-body">
+            <section>
+              <h4>Overdue</h4>
+              <ul class="pulse-list">
+                <li>
+                  <strong>Globex order API</strong>
+                  <span class="meta">Globex Logistics · due 2026-03-12 · 4 days late</span>
+                </li>
+              </ul>
+            </section>
+
+            <section>
+              <h4>Due in the next 7 days</h4>
+              <ul class="pulse-list">
+                <li>
+                  <strong>Initech sales dashboard</strong>
+                  <span class="meta"
+                    >Initech Consulting · 2026-03-16 · today · next: Chart design
+                    sign-off</span
+                  >
+                </li>
+                <li>
+                  <strong>Acme website refresh</strong>
+                  <span class="meta"
+                    >Acme Bakery · 2026-03-20 · in 4 days · next: Homepage review
+                    call</span
+                  >
+                </li>
+              </ul>
+            </section>
+
+            <section>
+              <h4>Blockers</h4>
+              <ul class="pulse-list blockers">
+                <li>
+                  <strong>Globex order API</strong>
+                  <ul>
+                    <li>No access to the staging server yet</li>
+                    <li>Payment sandbox keys not received</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong>Acme website refresh</strong>
+                  <ul>
+                    <li>Waiting for product photos from the client</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong>Umbrella accessibility audit</strong>
+                  <ul>
+                    <li>Client paused the project until the new budget is approved</li>
+                  </ul>
+                </li>
+              </ul>
+            </section>
+
+            <section>
+              <h4>Hours over estimate</h4>
+              <ul class="pulse-list">
+                <li>
+                  <strong>Globex order API</strong>
+                  <span class="meta">92 h spent of 80 h estimated · 12 h over</span>
+                </li>
+              </ul>
+            </section>
+          </div>
+
+          <footer class="report-foot">
+            <button type="button" id="copy-md" class="btn ghost small">
+              Copy Markdown
+            </button>
+            <a class="btn ghost small" href="sample-report.md" download>Download .md</a>
+          </footer>
+        </article>
+      </section>
+
+      <section class="section schema-section" id="schema" aria-labelledby="schema-title">
+        <div class="section-head">
+          <h2 id="schema-title">YAML schema</h2>
+          <p>
+            One project per file. Unknown fields and bad dates fail with the file,
+            line and a fix hint. Full JSON Schema lives in
+            <a href="schema.json"><code>schema.json</code></a>.
+          </p>
+        </div>
+
+        <div class="schema-layout">
+          <pre class="yaml-sample" tabindex="0"><code>name: Acme website refresh
+client: Acme Bakery
+status: active            # active | on-hold | done
+next_milestone: Homepage review call   # optional
+deadline: 2026-03-20      # YYYY-MM-DD
+blockers:                 # optional list of strings
+  - Waiting for product photos from the client
+hours_estimated: 40
+hours_spent: 31.5</code></pre>
+
+          <table class="field-table">
+            <caption class="visually-hidden">Project file fields</caption>
+            <thead>
+              <tr>
+                <th scope="col">Field</th>
+                <th scope="col">Required</th>
+                <th scope="col">Notes</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>name</code></td>
+                <td>yes</td>
+                <td>Unique across files (case-insensitive).</td>
+              </tr>
+              <tr>
+                <td><code>client</code></td>
+                <td>yes</td>
+                <td>Display label only.</td>
+              </tr>
+              <tr>
+                <td><code>status</code></td>
+                <td>yes</td>
+                <td><code>active</code>, <code>on-hold</code>, or <code>done</code>.</td>
+              </tr>
+              <tr>
+                <td><code>deadline</code></td>
+                <td>yes</td>
+                <td>Date only, <code>YYYY-MM-DD</code>. Due today is not overdue.</td>
+              </tr>
+              <tr>
+                <td><code>hours_estimated</code></td>
+                <td>yes</td>
+                <td>Non-negative number.</td>
+              </tr>
+              <tr>
+                <td><code>hours_spent</code></td>
+                <td>yes</td>
+                <td>Non-negative number. Over-estimate when spent &gt; estimated.</td>
+              </tr>
+              <tr>
+                <td><code>next_milestone</code></td>
+                <td>no</td>
+                <td>Short string.</td>
+              </tr>
+              <tr>
+                <td><code>blockers</code></td>
+                <td>no</td>
+                <td>List of non-empty strings. Ignored when status is <code>done</code>.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="section commands" aria-labelledby="cmd-title">
+        <div class="section-head">
+          <h2 id="cmd-title">Commands</h2>
+          <p>Install from a clone, then point at a directory of project files.</p>
+        </div>
+        <pre class="cmd" tabindex="0"><code>pip install -e .
+client-pulse list examples/projects --today 2026-03-16
+client-pulse overdue examples/projects --today 2026-03-16
+client-pulse blockers examples/projects --today 2026-03-16
+client-pulse weekly-report examples/projects --today 2026-03-16
+client-pulse weekly-report examples/projects --webhook-url "$URL" --dry-run
+client-pulse weekly-report examples/projects \
+  --telegram-token "$TELEGRAM_BOT_TOKEN" \
+  --telegram-chat-id "$TELEGRAM_CHAT_ID"</code></pre>
+      </section>
+    </main>
+
+    <footer class="site-foot">
+      <p>
+        Built by
+        <a href="https://github.com/mohamedtaqysalmi">Mohamed-Taqy Salmi</a>. Sample
+        clients are fictional. MIT license.
+      </p>
+    </footer>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>

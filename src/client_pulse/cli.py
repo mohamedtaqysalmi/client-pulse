@@ -8,6 +8,7 @@ import typer
 from client_pulse import __version__
 from client_pulse.loader import load_projects
 from client_pulse.models import Project
+from client_pulse.notify import post_telegram, post_webhook
 from client_pulse.report import (
     overdue,
     render_markdown,
@@ -171,16 +172,108 @@ def weekly_report(
         Path | None,
         typer.Option("--output", "-o", help="Write to this file instead of stdout."),
     ] = None,
+    webhook_url: Annotated[
+        str | None,
+        typer.Option(
+            "--webhook-url",
+            envvar="CLIENT_PULSE_WEBHOOK_URL",
+            help="POST the Markdown report to this URL (Content-Type: text/markdown).",
+        ),
+    ] = None,
+    telegram_token: Annotated[
+        str | None,
+        typer.Option(
+            "--telegram-token",
+            envvar="TELEGRAM_BOT_TOKEN",
+            help="Telegram bot token. Used with --telegram-chat-id.",
+        ),
+    ] = None,
+    telegram_chat_id: Annotated[
+        str | None,
+        typer.Option(
+            "--telegram-chat-id",
+            envvar="TELEGRAM_CHAT_ID",
+            help="Telegram chat id. Used with --telegram-token.",
+        ),
+    ] = None,
+    dry_run: Annotated[
+        bool,
+        typer.Option(
+            "--dry-run",
+            help="Build the report and show where it would be posted, without sending.",
+        ),
+    ] = False,
 ) -> None:
-    """Write the weekly report as Markdown (or JSON with --json)."""
+    """Write the weekly report as Markdown (or JSON with --json).
+
+    Optionally POST the Markdown to a webhook and/or Telegram. JSON mode cannot
+    be combined with posting: post the Markdown form, or pipe --json yourself.
+    """
     now = _today(today)
     projects = _load(path)
+    posting = bool(webhook_url or telegram_token or telegram_chat_id)
+    if json_out and posting:
+        typer.echo(
+            "error: --json cannot be combined with webhook or Telegram posting.",
+            err=True,
+        )
+        raise typer.Exit(2)
+    if (telegram_token and not telegram_chat_id) or (
+        telegram_chat_id and not telegram_token
+    ):
+        typer.echo(
+            "error: Telegram posting needs both --telegram-token and "
+            "--telegram-chat-id (or TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID).",
+            err=True,
+        )
+        raise typer.Exit(2)
+
     if json_out:
         text = json.dumps(report_data(projects, now), indent=2) + "\n"
     else:
         text = render_markdown(projects, now)
-    if output is None:
-        typer.echo(text, nl=False)
+
+    if webhook_url:
+        try:
+            result = post_webhook(webhook_url, text, dry_run=dry_run)
+        except (RuntimeError, ValueError) as exc:
+            typer.echo(f"error: webhook: {exc}", err=True)
+            raise typer.Exit(1) from None
+        if result.dry_run:
+            typer.echo(
+                f"dry-run: would POST Markdown to {result.destination}",
+                err=True,
+            )
+        else:
+            typer.echo(
+                f"Posted webhook ({result.status_code}) to {result.destination}",
+                err=True,
+            )
+
+    if telegram_token and telegram_chat_id:
+        try:
+            result = post_telegram(
+                telegram_token, telegram_chat_id, text, dry_run=dry_run
+            )
+        except (RuntimeError, ValueError) as exc:
+            typer.echo(f"error: telegram: {exc}", err=True)
+            raise typer.Exit(1) from None
+        if result.dry_run:
+            typer.echo(
+                f"dry-run: would send Telegram message to {result.destination}",
+                err=True,
+            )
+        else:
+            typer.echo(
+                f"Posted Telegram ({result.status_code}) to {result.destination}",
+                err=True,
+            )
+
+    if output is not None:
+        output.write_text(text, encoding="utf-8")
+        typer.echo(f"Wrote {output}", err=True)
         return
-    output.write_text(text, encoding="utf-8")
-    typer.echo(f"Wrote {output}", err=True)
+    if posting and not json_out:
+        # Avoid dumping the same body twice when the user only wanted to post.
+        return
+    typer.echo(text, nl=False)

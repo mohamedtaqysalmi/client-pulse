@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mohamedtaqysalmi.github.io/client-pulse/schema.json",
+  "title": "client-pulse project file",
+  "description": "One YAML/JSON object per client project. Unknown properties are rejected by the CLI loader.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "client",
+    "status",
+    "deadline",
+    "hours_estimated",
+    "hours_spent"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Project title. Must be unique across files (case-insensitive)."
+    },
+    "client": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Client display name."
+    },
+    "status": {
+      "type": "string",
+      "enum": ["active", "on-hold", "done"],
+      "description": "done projects are excluded from overdue, blockers and over-estimate checks."
+    },
+    "deadline": {
+      "type": "string",
+      "format": "date",
+      "description": "Due date as YYYY-MM-DD. A project due today is not overdue."
+    },
+    "hours_estimated": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Planned hours."
+    },
+    "hours_spent": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Hours already spent."
+    },
+    "next_milestone": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional short label for the next checkpoint."
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Optional open blockers. Ignored when status is done."
+    }
+  }
+}
