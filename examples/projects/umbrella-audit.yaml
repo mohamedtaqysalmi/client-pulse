@@ -1,0 +1,8 @@
+name: Umbrella accessibility audit
+client: Umbrella Travel
+status: on-hold
+deadline: 2026-04-30
+blockers:
+  - Client paused the project until the new budget is approved
+hours_estimated: 16
+hours_spent: 4
