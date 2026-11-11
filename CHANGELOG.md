@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Rebuilt the GitHub Pages site on the shared page style: the sample report rendered from the real command, terminal output of `list`, `overdue` and `blockers`, and the YAML schema table. Tests check the page against the CLI and the loader.
+
 ## [0.1.0] - 2026-11-11
 
 ### Added
