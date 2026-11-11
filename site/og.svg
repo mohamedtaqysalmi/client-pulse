@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <title>client-pulse</title>
-  <rect width="1200" height="630" fill="#fbfaf7"/>
-  <rect x="80" y="80" width="12" height="470" fill="#a02358"/>
-  <text x="130" y="220" font-family="system-ui, Arial, sans-serif" font-size="84" font-weight="700" fill="#1b1a17">client-pulse</text>
-  <text x="130" y="310" font-family="system-ui, Arial, sans-serif" font-size="38" fill="#5d5a52">Weekly status for client projects, from YAML files</text>
-  <text x="130" y="400" font-family="ui-monospace, Consolas, monospace" font-size="30" fill="#a02358">list  overdue  blockers  weekly-report</text>
+  <rect width="1200" height="630" fill="#ffffff"/>
+  <text x="100" y="260" font-family="Georgia, 'Times New Roman', serif" font-size="88" fill="#202122">client-pulse</text>
+  <line x1="100" y1="290" x2="1100" y2="290" stroke="#a2a9b1" stroke-width="2"/>
+  <text x="100" y="370" font-family="Georgia, 'Times New Roman', serif" font-size="38" fill="#54595d">Weekly status for client projects, from YAML files</text>
+  <text x="100" y="450" font-family="Consolas, monospace" font-size="30" fill="#0645ad">list  overdue  blockers  weekly-report</text>
 </svg>
