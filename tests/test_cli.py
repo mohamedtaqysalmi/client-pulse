@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
+import pytest
 from typer.testing import CliRunner
 
 from client_pulse import __version__
@@ -213,3 +214,194 @@ def test_today_can_come_from_the_environment() -> None:
 def test_today_defaults_to_system_date(tmp_path: Path) -> None:
     result = runner.invoke(app, ["list", str(tmp_path)])
     assert result.exit_code == 0
+
+
+def test_weekly_report_webhook_dry_run_does_not_print_body() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--webhook-url",
+            "https://hooks.example/inbox",
+            "--dry-run",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "dry-run: would POST Markdown" in result.stderr
+    assert result.stdout == ""
+
+
+def test_weekly_report_telegram_requires_both_options() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--telegram-token",
+            "tok",
+        ],
+    )
+    assert result.exit_code == 2
+    assert "both --telegram-token and --telegram-chat-id" in result.stderr
+
+
+def test_weekly_report_rejects_json_with_webhook() -> None:
+    result = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--json",
+            "--webhook-url",
+            "https://hooks.example/inbox",
+        ],
+    )
+    assert result.exit_code == 2
+    assert "--json cannot be combined" in result.stderr
+
+
+def test_weekly_report_posts_via_injected_poster(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from client_pulse.notify import Poster, PostResult
+
+    seen: list[str] = []
+
+    def fake_webhook(
+        url: str,
+        markdown: str,
+        *,
+        dry_run: bool = False,
+        poster: Poster | None = None,
+    ) -> PostResult:
+        del poster
+        seen.append(url)
+        assert "Weekly report" in markdown
+        assert not dry_run
+        return PostResult(destination=url, status_code=204)
+
+    monkeypatch.setattr("client_pulse.cli.post_webhook", fake_webhook)
+    result = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--webhook-url",
+            "https://hooks.example/inbox",
+        ],
+    )
+    assert result.exit_code == 0
+    assert seen == ["https://hooks.example/inbox"]
+    assert "Posted webhook (204)" in result.stderr
+    assert result.stdout == ""
+
+
+def test_weekly_report_telegram_dry_run(monkeypatch: pytest.MonkeyPatch) -> None:
+    from client_pulse.notify import Poster, PostResult
+
+    def fake_telegram(
+        token: str,
+        chat_id: str,
+        markdown: str,
+        *,
+        dry_run: bool = False,
+        poster: Poster | None = None,
+    ) -> PostResult:
+        del token, markdown, poster
+        assert dry_run
+        return PostResult(
+            destination=f"telegram:{chat_id}", status_code=0, dry_run=True
+        )
+
+    monkeypatch.setattr("client_pulse.cli.post_telegram", fake_telegram)
+    result = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--telegram-token",
+            "tok",
+            "--telegram-chat-id",
+            "99",
+            "--dry-run",
+        ],
+    )
+    assert result.exit_code == 0
+    assert "dry-run: would send Telegram" in result.stderr
+
+
+def test_weekly_report_webhook_failure_exits_1(monkeypatch: pytest.MonkeyPatch) -> None:
+    def boom(*_args: Any, **_kwargs: Any) -> None:
+        raise RuntimeError("connection refused")
+
+    monkeypatch.setattr("client_pulse.cli.post_webhook", boom)
+    result = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--webhook-url",
+            "https://hooks.example/inbox",
+        ],
+    )
+    assert result.exit_code == 1
+    assert "webhook: connection refused" in result.stderr
+
+
+def test_weekly_report_telegram_posts_and_can_fail(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from client_pulse.notify import Poster, PostResult
+
+    def ok_telegram(
+        token: str,
+        chat_id: str,
+        markdown: str,
+        *,
+        dry_run: bool = False,
+        poster: Poster | None = None,
+    ) -> PostResult:
+        del token, markdown, dry_run, poster
+        return PostResult(destination=f"telegram:{chat_id}", status_code=200)
+
+    monkeypatch.setattr("client_pulse.cli.post_telegram", ok_telegram)
+    ok = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--telegram-token",
+            "tok",
+            "--telegram-chat-id",
+            "99",
+        ],
+    )
+    assert ok.exit_code == 0
+    assert "Posted Telegram (200)" in ok.stderr
+
+    def boom(*_args: Any, **_kwargs: Any) -> None:
+        raise RuntimeError("chat not found")
+
+    monkeypatch.setattr("client_pulse.cli.post_telegram", boom)
+    bad = runner.invoke(
+        app,
+        [
+            "weekly-report",
+            str(EXAMPLES),
+            *TODAY,
+            "--telegram-token",
+            "tok",
+            "--telegram-chat-id",
+            "99",
+        ],
+    )
+    assert bad.exit_code == 1
+    assert "telegram: chat not found" in bad.stderr

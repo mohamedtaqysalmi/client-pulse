@@ -8,4 +8,4 @@ This is a solo-maintained project. I will try to acknowledge a report within a f
 
 ## Supported versions
 
-There is no release yet. Once there is one, only the latest release will get security fixes.
+Only the latest released version receives security fixes. Older tags are not patched.

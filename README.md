@@ -1,8 +1,8 @@
 # client-pulse
 
-A command line tool to track several client projects from YAML files: deadlines, blockers, hours and a weekly Markdown report.
+A command line tool to track several client projects from YAML files: deadlines, blockers, hours and a weekly Markdown report. Optionally POST that report to a webhook or Telegram.
 
-Status: early. The four core commands below work and are tested. Nothing is published to PyPI yet, so install from a clone.
+Status: v0.1.0. Install from a clone (not on PyPI yet). Sample site: [mohamedtaqysalmi.github.io/client-pulse](https://mohamedtaqysalmi.github.io/client-pulse/).
 
 ## Quickstart
 
@@ -61,6 +61,27 @@ A project due today is not overdue. Projects with status `done` are left out of 
 
 Every command accepts `--json`. For example `client-pulse overdue examples/projects --today 2026-03-16 --json` prints a list of project objects with `name`, `client`, `status`, `next_milestone`, `deadline`, `days_until_deadline`, `blockers`, `hours_estimated`, `hours_spent`, `over_estimate` and `source`. With `weekly-report --json` you get an object with `overdue`, `due_soon`, `blockers` and `over_estimate` lists.
 
+### Posting the weekly report
+
+`weekly-report` can POST the Markdown body:
+
+```bash
+# Generic webhook: raw Markdown, Content-Type text/markdown
+client-pulse weekly-report examples/projects \
+  --webhook-url "$CLIENT_PULSE_WEBHOOK_URL"
+
+# Telegram Bot API sendMessage (plain text, truncated at 4096 chars)
+client-pulse weekly-report examples/projects \
+  --telegram-token "$TELEGRAM_BOT_TOKEN" \
+  --telegram-chat-id "$TELEGRAM_CHAT_ID"
+
+# Build the report and show destinations without sending
+client-pulse weekly-report examples/projects \
+  --webhook-url "$CLIENT_PULSE_WEBHOOK_URL" --dry-run
+```
+
+Environment variables mirror the flags: `CLIENT_PULSE_WEBHOOK_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`. Slack and Discord expect their own JSON shapes; this release sends raw Markdown only. `--json` cannot be combined with posting.
+
 ### Validation errors
 
 Problems are reported with the file, the line and what to fix. All files are checked before anything is printed, and the exit code is 1 if any file is invalid:
@@ -76,8 +97,7 @@ error: examples/broken/missing-deadline.yaml:5: hours_spent: expected a number o
 
 ## What is not built yet
 
-- Posting the report to a webhook or Telegram.
-- A static web view.
+- Slack / Discord shaped webhook payloads.
 - Filters on the commands, such as by client or status.
 - A PyPI release.
 
@@ -92,7 +112,7 @@ mypy
 pytest
 ```
 
-`pytest` runs with coverage and fails below 85%. See [CONTRIBUTING.md](CONTRIBUTING.md) for branch and PR conventions.
+`pytest` runs with coverage and fails below 85%. See [CONTRIBUTING.md](CONTRIBUTING.md), [QA.md](QA.md) and [docs/architecture.md](docs/architecture.md).
 
 ## License
 
