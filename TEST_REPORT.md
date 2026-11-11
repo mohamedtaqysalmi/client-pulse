@@ -15,7 +15,7 @@ Local gate run used for the v0.1.0 tag. Public CI on `main` after merge is the r
 | Ruff lint | pass |
 | Ruff format | pass |
 | Mypy (strict) | pass |
-| Pytest | **69 passed** |
+| Pytest | **74 passed** |
 | Coverage | **98.38%** (floor 85%) |
 
 ## Notes

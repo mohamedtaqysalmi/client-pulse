@@ -1,15 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" role="img">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <title>client-pulse</title>
-  <defs>
-    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#0F6E6A"/>
-      <stop offset="100%" stop-color="#1D5F7A"/>
-    </linearGradient>
-  </defs>
-  <rect width="1200" height="630" fill="#F3F7F6"/>
-  <rect x="0" y="0" width="1200" height="18" fill="url(#g)"/>
-  <circle cx="160" cy="210" r="28" fill="#0F6E6A"/>
-  <text x="210" y="225" font-family="Sora, Arial, sans-serif" font-size="72" font-weight="700" fill="#102A2E">client-pulse</text>
-  <text x="160" y="320" font-family="Source Sans 3, Arial, sans-serif" font-size="36" fill="#3A5559">Weekly status from YAML project files</text>
-  <text x="160" y="390" font-family="IBM Plex Mono, monospace" font-size="28" fill="#0A4F4C">list · overdue · blockers · weekly-report</text>
+  <rect width="1200" height="630" fill="#ffffff"/>
+  <text x="100" y="260" font-family="Georgia, 'Times New Roman', serif" font-size="88" fill="#202122">client-pulse</text>
+  <line x1="100" y1="290" x2="1100" y2="290" stroke="#a2a9b1" stroke-width="2"/>
+  <text x="100" y="370" font-family="Georgia, 'Times New Roman', serif" font-size="38" fill="#54595d">Weekly status for client projects, from YAML files</text>
+  <text x="100" y="450" font-family="Consolas, monospace" font-size="30" fill="#0645ad">list  overdue  blockers  weekly-report</text>
 </svg>

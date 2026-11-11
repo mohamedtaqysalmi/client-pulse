@@ -1,0 +1,21 @@
+/* client-pulse: layout for the rendered sample report only. Everything else is base.css. */
+
+.report h3 {
+  margin-top: 0;
+}
+.report h4 {
+  margin: 1.25rem 0 0.4rem;
+}
+.report ul {
+  padding-left: 1.25rem;
+}
+.report ul ul {
+  margin-top: 0.2rem;
+}
+
+details.raw summary {
+  cursor: pointer;
+}
+details.raw .code {
+  margin-top: 0.75rem;
+}

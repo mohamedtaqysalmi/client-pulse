@@ -3,266 +3,413 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>client-pulse — weekly status from YAML project files</title>
+    <title>client-pulse: weekly status for client projects from YAML</title>
     <meta
       name="description"
-      content="CLI that turns one YAML file per client project into overdue lists, blockers, and a weekly Markdown report. Optional webhook and Telegram post."
+      content="Command line tool that reads one YAML file per client project and prints what is overdue, what is blocked and a weekly Markdown report."
     />
     <meta property="og:title" content="client-pulse" />
     <meta
       property="og:description"
-      content="Track several client projects from YAML: deadlines, blockers, hours, weekly report."
+      content="Track several client projects from YAML files: deadlines, blockers, hours and a weekly Markdown report."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://mohamedtaqysalmi.github.io/client-pulse/" />
     <meta property="og:image" content="https://mohamedtaqysalmi.github.io/client-pulse/og.svg" />
     <meta name="twitter:card" content="summary_large_image" />
-    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@500;600;700&family=Source+Sans+3:wght@400;500;600&display=swap"
-      rel="stylesheet"
+    <meta name="twitter:title" content="client-pulse" />
+    <meta
+      name="twitter:description"
+      content="Track several client projects from YAML files: deadlines, blockers, hours and a weekly Markdown report."
     />
-    <link rel="stylesheet" href="styles.css" />
+    <meta name="twitter:image" content="https://mohamedtaqysalmi.github.io/client-pulse/og.svg" />
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="base.css" />
+    <link rel="stylesheet" href="page.css" />
   </head>
   <body>
-    <a class="skip-link" href="#sample-report">Skip to sample report</a>
+    <a class="skip-link" href="#demo">Skip to the sample report</a>
 
-    <header class="top">
-      <div class="top-inner">
-        <span class="pulse-dot" aria-hidden="true"></span>
-        <strong class="logo">client-pulse</strong>
-        <nav aria-label="Primary">
-          <a href="#sample-report">Sample report</a>
-          <a href="#schema">YAML schema</a>
-          <a href="https://github.com/mohamedtaqysalmi/client-pulse">GitHub</a>
-        </nav>
-      </div>
+    <header class="wrap site-header">
+      <a class="brand" href="./">
+        <img src="favicon.svg" alt="" width="28" height="28" />
+        client-pulse
+      </a>
+      <nav class="site-nav" aria-label="Primary">
+        <a href="#demo">Sample report</a>
+        <a href="#schema">YAML schema</a>
+        <a href="#quickstart">Quickstart</a>
+        <a href="https://github.com/mohamedtaqysalmi/client-pulse">GitHub</a>
+      </nav>
     </header>
 
-    <section class="hero" aria-label="Introduction">
-      <div class="hero-grid" aria-hidden="true"></div>
-      <div class="hero-inner">
-        <p class="eyebrow">Freelance project tracker · YAML in, Markdown out</p>
-        <h1>client-pulse</h1>
-        <p class="tagline">
-          One YAML file per client project. List what is late, what is blocked, and
-          post a weekly report to a webhook or Telegram.
-        </p>
-        <div class="cta-row">
-          <a class="btn primary" href="#sample-report">See the sample report</a>
-          <a
-            class="btn ghost"
-            href="https://github.com/mohamedtaqysalmi/client-pulse#quickstart"
-            >Install from GitHub</a
-          >
-        </div>
-      </div>
-    </section>
-
     <main>
-      <section class="section" id="sample-report" aria-labelledby="report-title">
-        <div class="section-head">
-          <h2 id="report-title">Sample weekly report</h2>
-          <p>
-            Rendered from the five fictional projects in
-            <code>examples/projects</code>, fixed to
-            <time datetime="2026-03-16">2026-03-16</time>. Same Markdown the CLI
-            prints (and can POST).
-          </p>
+      <section class="wrap hero">
+        <p class="eyebrow">Python · Typer · YAML</p>
+        <h1>Weekly status for several client projects, from one YAML file each.</h1>
+        <p class="lede">
+          With a handful of clients it is easy to notice an overdue project or a stuck blocker
+          late. client-pulse reads one YAML file per project and prints what is late, what is
+          blocked and where hours ran over, plus a weekly report in Markdown. Nothing here is
+          real client data.
+        </p>
+        <div class="actions">
+          <a class="btn btn-primary" href="#demo">See the sample report</a>
+          <a class="btn" href="https://github.com/mohamedtaqysalmi/client-pulse">View the code</a>
         </div>
-
-        <article class="report" aria-label="Weekly report for 2026-03-16">
-          <header class="report-banner">
-            <div>
-              <p class="report-kicker">Week of</p>
-              <h3>16 Mar 2026</h3>
-            </div>
-            <ul class="stats" aria-label="Summary counts">
-              <li><span>4</span> open</li>
-              <li class="late"><span>1</span> overdue</li>
-              <li><span>3</span> blocked</li>
-            </ul>
-          </header>
-
-          <div class="report-body">
-            <section>
-              <h4>Overdue</h4>
-              <ul class="pulse-list">
-                <li>
-                  <strong>Globex order API</strong>
-                  <span class="meta">Globex Logistics · due 2026-03-12 · 4 days late</span>
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h4>Due in the next 7 days</h4>
-              <ul class="pulse-list">
-                <li>
-                  <strong>Initech sales dashboard</strong>
-                  <span class="meta"
-                    >Initech Consulting · 2026-03-16 · today · next: Chart design
-                    sign-off</span
-                  >
-                </li>
-                <li>
-                  <strong>Acme website refresh</strong>
-                  <span class="meta"
-                    >Acme Bakery · 2026-03-20 · in 4 days · next: Homepage review
-                    call</span
-                  >
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h4>Blockers</h4>
-              <ul class="pulse-list blockers">
-                <li>
-                  <strong>Globex order API</strong>
-                  <ul>
-                    <li>No access to the staging server yet</li>
-                    <li>Payment sandbox keys not received</li>
-                  </ul>
-                </li>
-                <li>
-                  <strong>Acme website refresh</strong>
-                  <ul>
-                    <li>Waiting for product photos from the client</li>
-                  </ul>
-                </li>
-                <li>
-                  <strong>Umbrella accessibility audit</strong>
-                  <ul>
-                    <li>Client paused the project until the new budget is approved</li>
-                  </ul>
-                </li>
-              </ul>
-            </section>
-
-            <section>
-              <h4>Hours over estimate</h4>
-              <ul class="pulse-list">
-                <li>
-                  <strong>Globex order API</strong>
-                  <span class="meta">92 h spent of 80 h estimated · 12 h over</span>
-                </li>
-              </ul>
-            </section>
+        <dl class="facts">
+          <div>
+            <dt>release</dt>
+            <dd>v0.1.0</dd>
           </div>
-
-          <footer class="report-foot">
-            <button type="button" id="copy-md" class="btn ghost small">
-              Copy Markdown
-            </button>
-            <a class="btn ghost small" href="sample-report.md" download>Download .md</a>
-          </footer>
-        </article>
+          <div>
+            <dt>tests</dt>
+            <dd>74 passing</dd>
+          </div>
+          <div>
+            <dt>coverage</dt>
+            <dd>98.38%</dd>
+          </div>
+          <div>
+            <dt>license</dt>
+            <dd>MIT</dd>
+          </div>
+        </dl>
       </section>
 
-      <section class="section schema-section" id="schema" aria-labelledby="schema-title">
+      <section class="wrap section" id="demo" aria-labelledby="demo-title">
         <div class="section-head">
-          <h2 id="schema-title">YAML schema</h2>
+          <h2 id="demo-title">Sample weekly report</h2>
+        </div>
+        <div class="section-body flow">
           <p>
-            One project per file. Unknown fields and bad dates fail with the file,
-            line and a fix hint. Full JSON Schema lives in
-            <a href="schema.json"><code>schema.json</code></a>.
+            This is the output of the command below, run on the five fictional projects in
+            <code>examples/projects</code> with the date fixed to 2026-03-16 so it is reproducible.
+            The page shows it rendered; the raw Markdown is underneath.
+          </p>
+          <div class="code">
+            <pre id="report-cmd"><code>client-pulse weekly-report examples/projects --today 2026-03-16</code></pre>
+            <button class="btn btn-small copy" type="button" data-copy="report-cmd">Copy</button>
+          </div>
+          <article class="panel report" aria-label="Weekly report for 2026-03-16">
+              <h3>Weekly report, 2026-03-16</h3>
+              <p>4 open projects, 1 overdue, 3 blocked.</p>
+              <h4>Overdue</h4>
+              <ul>
+              <li><strong>Globex order API</strong> (Globex Logistics): due 2026-03-12, 4 days late</li>
+              </ul>
+              <h4>Due in the next 7 days</h4>
+              <ul>
+              <li><strong>Initech sales dashboard</strong> (Initech Consulting): 2026-03-16, today, next: Chart design sign-off</li>
+              <li><strong>Acme website refresh</strong> (Acme Bakery): 2026-03-20, in 4 days, next: Homepage review call</li>
+              </ul>
+              <h4>Blockers</h4>
+              <ul>
+              <li><strong>Globex order API</strong> (Globex Logistics)
+              <ul>
+              <li>No access to the staging server yet</li>
+              <li>Payment sandbox keys not received</li>
+              </ul></li>
+              <li><strong>Acme website refresh</strong> (Acme Bakery)
+              <ul>
+              <li>Waiting for product photos from the client</li>
+              </ul></li>
+              <li><strong>Umbrella accessibility audit</strong> (Umbrella Travel)
+              <ul>
+              <li>Client paused the project until the new budget is approved</li>
+              </ul></li>
+              </ul>
+              <h4>Hours over estimate</h4>
+              <ul>
+              <li><strong>Globex order API</strong> (Globex Logistics): 92 h spent of 80 h estimated, 12 h over</li>
+              </ul>
+          </article>
+          <details class="raw">
+            <summary>Show the raw Markdown</summary>
+            <div class="code">
+              <pre id="report-md"><code># Weekly report, 2026-03-16
+
+4 open projects, 1 overdue, 3 blocked.
+
+## Overdue
+
+- **Globex order API** (Globex Logistics): due 2026-03-12, 4 days late
+
+## Due in the next 7 days
+
+- **Initech sales dashboard** (Initech Consulting): 2026-03-16, today, next: Chart design sign-off
+- **Acme website refresh** (Acme Bakery): 2026-03-20, in 4 days, next: Homepage review call
+
+## Blockers
+
+- **Globex order API** (Globex Logistics)
+  - No access to the staging server yet
+  - Payment sandbox keys not received
+- **Acme website refresh** (Acme Bakery)
+  - Waiting for product photos from the client
+- **Umbrella accessibility audit** (Umbrella Travel)
+  - Client paused the project until the new budget is approved
+
+## Hours over estimate
+
+- **Globex order API** (Globex Logistics): 92 h spent of 80 h estimated, 12 h over</code></pre>
+              <button class="btn btn-small copy" type="button" data-copy="report-md">Copy</button>
+            </div>
+          </details>
+          <p class="hint">
+            The same text is saved as <a href="sample-report.md">sample-report.md</a>. A test
+            fails if it stops matching what the command prints.
           </p>
         </div>
+      </section>
 
-        <div class="schema-layout">
-          <pre class="yaml-sample" tabindex="0"><code>name: Acme website refresh
+      <section class="wrap section" aria-labelledby="terminal-title">
+        <div class="section-head">
+          <h2 id="terminal-title">Terminal output</h2>
+        </div>
+        <div class="section-body flow">
+          <p>
+            The other three commands, on the same projects and the same date. A project due on
+            the day itself is not overdue, and projects with status <code>done</code> never count as overdue or blocked.
+          </p>
+          <h3><code>list</code></h3>
+          <div class="code">
+            <pre id="out-list"><code>$ client-pulse list examples/projects --today 2026-03-16
+PROJECT                       CLIENT              STATUS   DEADLINE    HOURS    NEXT MILESTONE
+Hooli landing page            Hooli Studio        done     2026-03-02  14/12    -
+Globex order API              Globex Logistics    active   2026-03-12  92/80    Staging deploy
+Initech sales dashboard       Initech Consulting  active   2026-03-16  18/25    Chart design sign-off
+Acme website refresh          Acme Bakery         active   2026-03-20  31.5/40  Homepage review call
+Umbrella accessibility audit  Umbrella Travel     on-hold  2026-04-30  4/16     -</code></pre>
+            <button class="btn btn-small copy" type="button" data-copy="out-list">Copy</button>
+          </div>
+          <h3><code>overdue</code></h3>
+          <div class="code">
+            <pre id="out-overdue"><code>$ client-pulse overdue examples/projects --today 2026-03-16
+PROJECT           CLIENT            DEADLINE    DAYS LATE
+Globex order API  Globex Logistics  2026-03-12  4</code></pre>
+            <button class="btn btn-small copy" type="button" data-copy="out-overdue">Copy</button>
+          </div>
+          <h3><code>blockers</code></h3>
+          <div class="code">
+            <pre id="out-blockers"><code>$ client-pulse blockers examples/projects --today 2026-03-16
+Globex order API (Globex Logistics), due 2026-03-12
+  - No access to the staging server yet
+  - Payment sandbox keys not received
+Acme website refresh (Acme Bakery), due 2026-03-20
+  - Waiting for product photos from the client
+Umbrella accessibility audit (Umbrella Travel), due 2026-04-30
+  - Client paused the project until the new budget is approved</code></pre>
+            <button class="btn btn-small copy" type="button" data-copy="out-blockers">Copy</button>
+          </div>
+          <p>Every command also takes <code>--json</code>.</p>
+        </div>
+      </section>
+
+      <section class="wrap section" id="schema" aria-labelledby="schema-title">
+        <div class="section-head">
+          <h2 id="schema-title">YAML schema</h2>
+        </div>
+        <div class="section-body flow">
+          <p>
+            One project per file. Unknown fields, bad dates and wrong types are reported with the
+            file, the line and what to fix. The table is built from
+            <a href="schema.json">schema.json</a>, and a test checks that file against the
+            fields the loader actually accepts.
+          </p>
+          <div class="code">
+            <pre id="yaml-example"><code>name: Acme website refresh
 client: Acme Bakery
-status: active            # active | on-hold | done
-next_milestone: Homepage review call   # optional
-deadline: 2026-03-20      # YYYY-MM-DD
-blockers:                 # optional list of strings
+status: active
+next_milestone: Homepage review call
+deadline: 2026-03-20
+blockers:
   - Waiting for product photos from the client
 hours_estimated: 40
 hours_spent: 31.5</code></pre>
-
-          <table class="field-table">
-            <caption class="visually-hidden">Project file fields</caption>
-            <thead>
-              <tr>
-                <th scope="col">Field</th>
-                <th scope="col">Required</th>
-                <th scope="col">Notes</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><code>name</code></td>
-                <td>yes</td>
-                <td>Unique across files (case-insensitive).</td>
-              </tr>
-              <tr>
-                <td><code>client</code></td>
-                <td>yes</td>
-                <td>Display label only.</td>
-              </tr>
-              <tr>
-                <td><code>status</code></td>
-                <td>yes</td>
-                <td><code>active</code>, <code>on-hold</code>, or <code>done</code>.</td>
-              </tr>
-              <tr>
-                <td><code>deadline</code></td>
-                <td>yes</td>
-                <td>Date only, <code>YYYY-MM-DD</code>. Due today is not overdue.</td>
-              </tr>
-              <tr>
-                <td><code>hours_estimated</code></td>
-                <td>yes</td>
-                <td>Non-negative number.</td>
-              </tr>
-              <tr>
-                <td><code>hours_spent</code></td>
-                <td>yes</td>
-                <td>Non-negative number. Over-estimate when spent &gt; estimated.</td>
-              </tr>
-              <tr>
-                <td><code>next_milestone</code></td>
-                <td>no</td>
-                <td>Short string.</td>
-              </tr>
-              <tr>
-                <td><code>blockers</code></td>
-                <td>no</td>
-                <td>List of non-empty strings. Ignored when status is <code>done</code>.</td>
-              </tr>
-            </tbody>
-          </table>
+            <button class="btn btn-small copy" type="button" data-copy="yaml-example">Copy</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <caption class="visually-hidden">Project file fields</caption>
+              <thead>
+                <tr>
+                  <th scope="col">Field</th>
+                  <th scope="col">Required</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Notes</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>name</code></td>
+                  <td>yes</td>
+                  <td>text</td>
+                  <td>Project title. Must be unique across files (case-insensitive).</td>
+                </tr>
+                <tr>
+                  <td><code>client</code></td>
+                  <td>yes</td>
+                  <td>text</td>
+                  <td>Client display name.</td>
+                </tr>
+                <tr>
+                  <td><code>status</code></td>
+                  <td>yes</td>
+                  <td>active | on-hold | done</td>
+                  <td>done projects are excluded from overdue, blockers and over-estimate checks.</td>
+                </tr>
+                <tr>
+                  <td><code>deadline</code></td>
+                  <td>yes</td>
+                  <td>date</td>
+                  <td>Due date as YYYY-MM-DD. A project due today is not overdue.</td>
+                </tr>
+                <tr>
+                  <td><code>hours_estimated</code></td>
+                  <td>yes</td>
+                  <td>number</td>
+                  <td>Planned hours.</td>
+                </tr>
+                <tr>
+                  <td><code>hours_spent</code></td>
+                  <td>yes</td>
+                  <td>number</td>
+                  <td>Hours already spent.</td>
+                </tr>
+                <tr>
+                  <td><code>next_milestone</code></td>
+                  <td>no</td>
+                  <td>text</td>
+                  <td>Optional short label for the next checkpoint.</td>
+                </tr>
+                <tr>
+                  <td><code>blockers</code></td>
+                  <td>no</td>
+                  <td>list of text</td>
+                  <td>Optional open blockers. Ignored when status is done.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
-      <section class="section commands" aria-labelledby="cmd-title">
+      <section class="wrap section" aria-labelledby="status-title">
         <div class="section-head">
-          <h2 id="cmd-title">Commands</h2>
-          <p>Install from a clone, then point at a directory of project files.</p>
+          <h2 id="status-title">What works</h2>
         </div>
-        <pre class="cmd" tabindex="0"><code>pip install -e .
-client-pulse list examples/projects --today 2026-03-16
-client-pulse overdue examples/projects --today 2026-03-16
-client-pulse blockers examples/projects --today 2026-03-16
-client-pulse weekly-report examples/projects --today 2026-03-16
-client-pulse weekly-report examples/projects --webhook-url "$URL" --dry-run
-client-pulse weekly-report examples/projects \
-  --telegram-token "$TELEGRAM_BOT_TOKEN" \
-  --telegram-chat-id "$TELEGRAM_CHAT_ID"</code></pre>
+        <div class="section-body flow">
+          <ul class="status">
+            <li>
+              <span class="tag tag-ok">works</span>
+              <span><code>list</code>, <code>overdue</code>, <code>blockers</code> and <code>weekly-report</code>, each with <code>--json</code></span>
+            </li>
+            <li>
+              <span class="tag tag-ok">works</span>
+              <span>YAML validation with file, line and a fix hint, including duplicate project names across files</span>
+            </li>
+            <li>
+              <span class="tag tag-partial">partial</span>
+              <span>Posting the report to a webhook or Telegram. It is tested with mocked HTTP only; I have not run it against a live service.</span>
+            </li>
+            <li>
+              <span class="tag tag-no">not done</span>
+              <span>Filters by client or status, and a PyPI release. Install from a clone.</span>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="wrap section" id="quickstart" aria-labelledby="quick-title">
+        <div class="section-head">
+          <h2 id="quick-title">Quickstart</h2>
+        </div>
+        <div class="section-body flow">
+          <div class="code">
+            <pre id="quickstart-code"><code>git clone https://github.com/mohamedtaqysalmi/client-pulse
+cd client-pulse
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+client-pulse list examples/projects</code></pre>
+            <button class="btn btn-small copy" type="button" data-copy="quickstart-code">Copy</button>
+          </div>
+          <div class="badges">
+            <a href="https://github.com/mohamedtaqysalmi/client-pulse/actions/workflows/ci.yml"
+              ><img
+                alt="CI status"
+                width="110"
+                height="20"
+                src="https://github.com/mohamedtaqysalmi/client-pulse/actions/workflows/ci.yml/badge.svg"
+            /></a>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap section" aria-labelledby="built-title">
+        <div class="section-head">
+          <h2 id="built-title">How I built it</h2>
+        </div>
+        <div class="section-body">
+          <div class="notes">
+            <article>
+              <h3>ruamel.yaml for line numbers</h3>
+              <p>
+                Error messages are only useful if they point at the line. ruamel.yaml's
+                round-trip loader keeps the position of every key and list item, and it is pure
+                Python, so it installs on every Python version I test.
+              </p>
+            </article>
+            <article>
+              <h3>Today is an input</h3>
+              <p>
+                Overdue depends on the date, so every command takes <code>--today</code> (or
+                <code>CLIENT_PULSE_TODAY</code>). The tests and the output on this page use a
+                fixed date instead of the clock.
+              </p>
+            </article>
+            <article>
+              <h3>All files are checked before anything is printed</h3>
+              <p>
+                A half-valid directory would give a report that silently misses projects. If any
+                file is invalid the command lists every problem and exits with code 1.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="wrap section" aria-labelledby="limits-title">
+        <div class="section-head">
+          <h2 id="limits-title">Limits and roadmap</h2>
+        </div>
+        <div class="section-body flow">
+          <ul>
+            <li>Deadlines are dates without a time zone. "Today" is the system date unless you pass <code>--today</code>.</li>
+            <li>One project per file; a single file with several projects is not supported.</li>
+            <li>There is no web editor. This page is a static sample.</li>
+          </ul>
+          <p>
+            What comes next is tracked in the
+            <a href="https://github.com/mohamedtaqysalmi/client-pulse/issues">open issues</a>. To
+            contribute, start with
+            <a href="https://github.com/mohamedtaqysalmi/client-pulse/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>.
+          </p>
+        </div>
       </section>
     </main>
 
-    <footer class="site-foot">
+    <footer class="wrap site-footer">
       <p>
-        Built by
-        <a href="https://github.com/mohamedtaqysalmi">Mohamed-Taqy Salmi</a>. Sample
-        clients are fictional. MIT license.
+        Built by <a href="https://github.com/mohamedtaqysalmi">Mohamed-Taqy Salmi</a> ·
+        <a href="https://www.linkedin.com/in/mohamedtaqysalmi">LinkedIn</a>
+      </p>
+      <p>
+        MIT licensed · <a href="https://github.com/mohamedtaqysalmi/client-pulse">Source on GitHub</a>
       </p>
     </footer>
 
-    <script src="app.js" defer></script>
+    <script src="base.js" defer></script>
   </body>
 </html>
