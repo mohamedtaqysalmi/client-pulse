@@ -1,4 +1,5 @@
 import json
+import sys
 from datetime import date
 from pathlib import Path
 from typing import Annotated, Any
@@ -7,7 +8,7 @@ import typer
 
 from client_pulse import __version__
 from client_pulse.loader import load_projects
-from client_pulse.models import Project
+from client_pulse.models import Project, format_hours, parse_date
 from client_pulse.notify import post_telegram, post_webhook
 from client_pulse.report import (
     overdue,
@@ -43,20 +44,29 @@ def _version(value: bool) -> None:
         raise typer.Exit()
 
 
+def _use_utf8() -> None:
+    # Client names are not always ASCII, and a Windows console or a pipe can
+    # default to a legacy code page that cannot encode them.
+    for stream in (sys.stdout, sys.stderr):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if reconfigure is not None:
+            reconfigure(encoding="utf-8", errors="replace")
+
+
 @app.callback()
 def main(
     version: Annotated[
         bool, typer.Option("--version", callback=_version, is_eager=True)
     ] = False,
 ) -> None:
-    pass
+    _use_utf8()
 
 
 def _today(value: str | None) -> date:
     if value is None:
         return date.today()
     try:
-        return date.fromisoformat(value)
+        return parse_date(value)
     except ValueError:
         typer.echo(f"error: --today {value!r} is not a date. Use YYYY-MM-DD.", err=True)
         raise typer.Exit(2) from None
@@ -80,7 +90,7 @@ def _load(path: Path) -> list[Project]:
 
 
 def _emit_json(data: Any) -> None:
-    typer.echo(json.dumps(data, indent=2))
+    typer.echo(json.dumps(data, indent=2, ensure_ascii=False))
 
 
 def _table(headers: list[str], rows: list[list[str]]) -> str:
@@ -112,7 +122,7 @@ def list_projects(
             p.client,
             p.status.value,
             p.deadline.isoformat(),
-            f"{p.hours_spent:g}/{p.hours_estimated:g}",
+            f"{format_hours(p.hours_spent)}/{format_hours(p.hours_estimated)}",
             p.next_milestone or "-",
         ]
         for p in projects
@@ -270,7 +280,13 @@ def weekly_report(
             )
 
     if output is not None:
-        output.write_text(text, encoding="utf-8")
+        try:
+            # Same bytes on every OS, so no \r\n translation on Windows.
+            with output.open("w", encoding="utf-8", newline="\n") as handle:
+                handle.write(text)
+        except OSError as exc:
+            typer.echo(f"error: cannot write {output}: {exc.strerror or exc}", err=True)
+            raise typer.Exit(1) from None
         typer.echo(f"Wrote {output}", err=True)
         return
     if posting and not json_out:
