@@ -178,7 +178,7 @@ def test_default_poster_http_error_hides_the_url() -> None:
     ):
         _default_poster(url, b"hi", {})
     assert TOKEN not in str(raised.value)
-    assert "api.telegram.org" in str(raised.value)
+    assert str(raised.value).startswith("POST to api.telegram.org failed")
 
 
 def test_default_poster_url_error_hides_the_url() -> None:

@@ -222,7 +222,7 @@ def test_webhook_url_secrets_are_not_printed(write_project: ProjectWriter) -> No
         app, ["weekly-report", folder, "--webhook-url", url, "--dry-run"]
     )
     assert "SECRETPART" not in dry.stderr
-    assert "hooks.example" in dry.stderr
+    assert dry.stderr.strip() == "dry-run: would POST Markdown to https://hooks.example"
 
 
 def test_telegram_token_never_appears_when_the_api_rejects_it(
