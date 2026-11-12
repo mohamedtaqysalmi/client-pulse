@@ -1,8 +1,22 @@
+import re
 from dataclasses import dataclass, field
 from datetime import date
 from enum import StrEnum
 from pathlib import Path
 from typing import Any
+
+
+def format_hours(value: float) -> str:
+    """Hours with at most two decimals and no exponent, e.g. 31.5 or 1234567."""
+    return (f"{value:.2f}".rstrip("0").rstrip(".")) or "0"
+
+
+def parse_date(text: str) -> date:
+    """Parse YYYY-MM-DD only. date.fromisoformat also takes 20260316 and week dates,
+    and which forms it accepts depends on the Python version."""
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", text):
+        raise ValueError(text)
+    return date.fromisoformat(text)
 
 
 class Status(StrEnum):

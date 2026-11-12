@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- A Telegram error (for example a rejected token) printed the full request URL, including the bot token. Errors and status lines now show only the host.
+- Webhook URLs were not restricted. Only `https://` is accepted now (not `http://`, `file://` or others), and redirects are no longer followed.
+- Timeouts and connection resets while posting ended in a traceback. They are reported as a failed post.
+- A control character in a YAML file ended in a traceback. It is now an error with the line number.
+- A YAML alias bomb in a text field made error reporting hang while it formatted the value.
+- Names, clients, milestones and blockers could contain line breaks. A line break in a name could add a heading to the report; Markdown characters are now escaped as well.
+- `.inf` and `.nan` were accepted as hours. Hours of a million or more printed as `1.23457e+06`, and `100000.5` printed as `100000`.
+- Non-ASCII client names could fail to print on consoles with a legacy code page, and `--json` escaped them as unicode escapes.
+- `--output` to a folder that does not exist ended in a traceback. The file is now written with Unix line endings on every OS.
+- Unclosed quotes were reported at the end of the file; the message now also names the line where they started.
+- A non-string YAML key was reported without a line number, and an empty `deadline` said `None is not a valid date`.
+- `--today` and deadlines accepted `20260316` and week dates on some Python versions. Only `YYYY-MM-DD` is accepted.
+- Loading reused no parser and was about twice as slow as needed.
+
 ### Changed
 
 - Rebuilt the GitHub Pages site on the shared page style: the sample report rendered from the real command, terminal output of `list`, `overdue` and `blockers`, and the YAML schema table. Tests check the page against the CLI and the loader.

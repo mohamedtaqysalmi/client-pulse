@@ -1,7 +1,8 @@
+import re
 from datetime import date, timedelta
 from typing import Any
 
-from client_pulse.models import Project
+from client_pulse.models import Project, format_hours
 
 WINDOW_DAYS = 7
 
@@ -43,8 +44,18 @@ def report_data(projects: list[Project], today: date) -> dict[str, Any]:
     }
 
 
-def _hours(value: float) -> str:
-    return f"{value:g}"
+def md_escape(text: str) -> str:
+    """Escape characters that would start inline Markdown or HTML.
+
+    Project fields are user input. Without this, a name like "[x](http://...)"
+    becomes a live link in the report. The report is also posted as plain text,
+    so only the few characters that matter inline are escaped.
+    """
+    return re.sub(r"([\\`*_\[\]<>])", r"\\\1", text)
+
+
+def _label(p: Project) -> str:
+    return f"**{md_escape(p.name)}** ({md_escape(p.client)})"
 
 
 def _days(n: int) -> str:
@@ -69,7 +80,7 @@ def render_markdown(projects: list[Project], today: date) -> str:
     if late:
         for p in late:
             lines.append(
-                f"- **{p.name}** ({p.client}): due {p.deadline.isoformat()}, "
+                f"- {_label(p)}: due {p.deadline.isoformat()}, "
                 f"{_days(-p.days_until_deadline(today))} late"
             )
     else:
@@ -83,19 +94,18 @@ def render_markdown(projects: list[Project], today: date) -> str:
                 if p.deadline == today
                 else f"in {_days(p.days_until_deadline(today))}"
             )
-            milestone = f", next: {p.next_milestone}" if p.next_milestone else ""
-            lines.append(
-                f"- **{p.name}** ({p.client}): {p.deadline.isoformat()}, "
-                f"{when}{milestone}"
+            milestone = (
+                f", next: {md_escape(p.next_milestone)}" if p.next_milestone else ""
             )
+            lines.append(f"- {_label(p)}: {p.deadline.isoformat()}, {when}{milestone}")
     else:
         lines.append("Nothing due.")
 
     lines += ["", "## Blockers", ""]
     if blocked:
         for p in blocked:
-            lines.append(f"- **{p.name}** ({p.client})")
-            lines.extend(f"  - {b}" for b in p.blockers)
+            lines.append(f"- {_label(p)}")
+            lines.extend(f"  - {md_escape(b)}" for b in p.blockers)
     else:
         lines.append("No open blockers.")
 
@@ -103,9 +113,11 @@ def render_markdown(projects: list[Project], today: date) -> str:
     if over:
         for p in over:
             extra = p.hours_spent - p.hours_estimated
+            spent = format_hours(p.hours_spent)
+            planned = format_hours(p.hours_estimated)
             lines.append(
-                f"- **{p.name}** ({p.client}): {_hours(p.hours_spent)} h spent of "
-                f"{_hours(p.hours_estimated)} h estimated, {_hours(extra)} h over"
+                f"- {_label(p)}: {spent} h spent of {planned} h estimated, "
+                f"{format_hours(extra)} h over"
             )
     else:
         lines.append("All open projects are within their estimate.")

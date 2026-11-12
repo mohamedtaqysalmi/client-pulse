@@ -82,6 +82,8 @@ client-pulse weekly-report examples/projects \
 
 Environment variables mirror the flags: `CLIENT_PULSE_WEBHOOK_URL`, `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`. Slack and Discord expect their own JSON shapes; this release sends raw Markdown only. `--json` cannot be combined with posting.
 
+Webhook URLs must start with `https://`; anything else is refused. Redirects are not followed and each request times out after 15 seconds. Error and status lines show only the host, because webhook paths and Telegram tokens are secrets. Prefer the environment variables over `--telegram-token`, since command line arguments are visible in the process list to other users of the machine.
+
 ### Validation errors
 
 Problems are reported with the file, the line and what to fix. All files are checked before anything is printed, and the exit code is 1 if any file is invalid:
@@ -89,11 +91,11 @@ Problems are reported with the file, the line and what to fix. All files are che
 ```console
 $ client-pulse list examples/broken
 error: examples/broken/missing-deadline.yaml:1: missing required field 'deadline'
-error: examples/broken/missing-deadline.yaml:5: hours_spent: expected a number of hours, got str 'ten'
+error: examples/broken/missing-deadline.yaml:5: hours_spent: expected a number of hours, got text 'ten'
 2 problems found, nothing reported.
 ```
 
-(Paths are shown with forward slashes here. On Windows they print with backslashes.) The checks cover missing fields, unknown fields, bad dates, wrong types, negative hours, unknown status values, YAML syntax errors and duplicate project names across files.
+(Paths are shown with forward slashes here. On Windows they print with backslashes.) The checks cover missing fields, unknown fields, bad dates (only `YYYY-MM-DD`), wrong types, negative or non-finite hours, unknown status values, line breaks and control characters in text fields, YAML syntax errors and duplicate project names across files. Names, clients, milestones and blockers must fit on one line; Markdown characters in them are escaped in the report.
 
 ## What is not built yet
 

@@ -1,3 +1,6 @@
+import functools
+import math
+import unicodedata
 from dataclasses import dataclass
 from datetime import date, datetime
 from pathlib import Path
@@ -6,10 +9,11 @@ from typing import Any
 from ruamel.yaml import YAML
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
 from ruamel.yaml.constructor import RoundTripConstructor
-from ruamel.yaml.error import MarkedYAMLError
+from ruamel.yaml.error import MarkedYAMLError, YAMLError
 from ruamel.yaml.nodes import ScalarNode
+from ruamel.yaml.reader import ReaderError
 
-from client_pulse.models import Project, Status
+from client_pulse.models import Project, Status, parse_date
 
 REQUIRED = ("name", "client", "status", "deadline", "hours_estimated", "hours_spent")
 OPTIONAL = ("next_milestone", "blockers")
@@ -82,10 +86,24 @@ def load_projects(path: Path) -> LoadResult:
     return LoadResult(projects, errors)
 
 
-def _yaml() -> YAML:
+@functools.cache
+def _yaml() -> YAML:  # one parser for all files: about twice as fast
     yaml = YAML(typ="rt")
     yaml.Constructor = _Constructor
     return yaml
+
+
+def _describe_yaml_error(exc: MarkedYAMLError) -> tuple[int | None, str]:
+    mark = exc.problem_mark
+    line = mark.line + 1 if mark is not None else None
+    problem = exc.problem or "invalid YAML"
+    if "another document" in problem:
+        problem = "found a second document. Keep one project per file"
+    message = f"invalid YAML: {problem}"
+    start = exc.context_mark
+    if start is not None and line is not None and start.line + 1 != line:
+        message += f" (the construct starting at line {start.line + 1} is not closed)"
+    return line, message
 
 
 def _line(node: CommentedMap | CommentedSeq, key: Any) -> int | None:
@@ -97,14 +115,30 @@ def _line(node: CommentedMap | CommentedSeq, key: Any) -> int | None:
 
 def _load_file(file: Path) -> tuple[Project | None, list[LoadError], int | None]:
     try:
-        data = _yaml().load(file.read_text(encoding="utf-8"))
-    except MarkedYAMLError as exc:
-        mark = exc.problem_mark
-        line = mark.line + 1 if mark is not None else None
-        problem = exc.problem or "invalid YAML"
-        return None, [LoadError(file, line, f"invalid YAML: {problem}")], None
+        text = file.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError) as exc:
         return None, [LoadError(file, None, f"cannot read file: {exc}")], None
+    try:
+        data = _yaml().load(text)
+    except ReaderError as exc:
+        # Control characters. The reader reports an offset, not a mark.
+        line = text.count("\n", 0, exc.position) + 1 if exc.position >= 0 else None
+        shown = f"U+{exc.character:04X}" if isinstance(exc.character, int) else "?"
+        return (
+            None,
+            [
+                LoadError(
+                    file,
+                    line,
+                    f"invalid YAML: control character {shown} is not allowed",
+                )
+            ],
+            None,
+        )
+    except MarkedYAMLError as exc:
+        return None, [LoadError(file, *_describe_yaml_error(exc))], None
+    except YAMLError as exc:
+        return None, [LoadError(file, None, f"invalid YAML: {exc}")], None
 
     if not isinstance(data, CommentedMap):
         return (
@@ -124,9 +158,13 @@ def _load_file(file: Path) -> tuple[Project | None, list[LoadError], int | None]
 
     for key in data:
         if key not in REQUIRED and key not in OPTIONAL:
-            err(
-                str(key),
-                f"unknown field. Allowed fields: {', '.join(REQUIRED + OPTIONAL)}",
+            errors.append(
+                LoadError(
+                    file,
+                    _line(data, key),
+                    f"{str(key)[:40]!r}: unknown field. "
+                    f"Allowed fields: {', '.join(REQUIRED + OPTIONAL)}",
+                )
             )
     for key in REQUIRED:
         if key not in data:
@@ -166,8 +204,18 @@ def _load_file(file: Path) -> tuple[Project | None, list[LoadError], int | None]
     return project, errors, name_line
 
 
-def _type_name(value: object) -> str:
-    return type(value).__name__
+# Bidirectional overrides can make text read differently from how it is stored.
+_BIDI_CONTROLS = set("‪‫‬‭‮⁦⁧⁨⁩")
+
+
+def _bad_character(text: str) -> str | None:
+    """Return a description of the first character that must not appear, if any."""
+    for char in text:
+        if char in "\r\n":
+            return "a line break. Keep it on one line"
+        if unicodedata.category(char) == "Cc" or char in _BIDI_CONTROLS:
+            return f"the control character U+{ord(char):04X}"
+    return None
 
 
 def _text(data: CommentedMap, key: str, err: Any, *, required: bool) -> str | None:
@@ -183,15 +231,29 @@ def _text(data: CommentedMap, key: str, err: Any, *, required: bool) -> str | No
             "Wrap it in quotes if it is a number.",
         )
         return None
+    problem = _bad_character(value.strip())
+    if problem:
+        err(key, f"text contains {problem}")
+        return None
     return value.strip()
 
 
 def _describe(value: object) -> str:
+    """Name a value for an error message without printing it in full."""
     if value is None:
         return "an empty value"
-    if isinstance(value, str) and not value.strip():
-        return "an empty string"
-    return f"{_type_name(value)} {value!r}"
+    if isinstance(value, str):
+        if not value.strip():
+            return "an empty string"
+        shown = value if len(value) <= 40 else value[:37] + "..."
+        return f"text {shown!r}"
+    if isinstance(value, bool | int | float):
+        return f"{type(value).__name__} {value!r}"
+    if isinstance(value, CommentedSeq):
+        return "a list"
+    if isinstance(value, CommentedMap):
+        return "a mapping"
+    return type(value).__name__
 
 
 def _status(data: CommentedMap, err: Any) -> Status | None:
@@ -199,11 +261,13 @@ def _status(data: CommentedMap, err: Any) -> Status | None:
         return None
     value = data["status"]
     allowed = ", ".join(s.value for s in Status)
-    try:
-        return Status(value)
-    except ValueError:
-        err("status", f"{value!r} is not a valid status. Use one of: {allowed}")
-        return None
+    if isinstance(value, str):
+        try:
+            return Status(value)
+        except ValueError:
+            pass
+    err("status", f"{_describe(value)} is not a valid status. Use one of: {allowed}")
+    return None
 
 
 def _date(data: CommentedMap, key: str, err: Any) -> date | None:
@@ -217,12 +281,12 @@ def _date(data: CommentedMap, key: str, err: Any) -> date | None:
         return value
     if isinstance(value, str):
         try:
-            return date.fromisoformat(value)
+            return parse_date(value)
         except ValueError:
             pass
     err(
         key,
-        f"{value!r} is not a valid date. "
+        f"{_describe(value)} is not a valid date. "
         "Use the form YYYY-MM-DD, for example 2026-03-31",
     )
     return None
@@ -234,6 +298,9 @@ def _hours(data: CommentedMap, key: str, err: Any) -> float | None:
     value = data[key]
     if isinstance(value, bool) or not isinstance(value, int | float):
         err(key, f"expected a number of hours, got {_describe(value)}")
+        return None
+    if not math.isfinite(value):
+        err(key, "hours must be a finite number, not .inf or .nan")
         return None
     if value < 0:
         err(key, f"hours cannot be negative, got {value}")
@@ -250,12 +317,17 @@ def _blockers(data: CommentedMap, err: Any) -> list[str]:
         return []
     result: list[str] = []
     for index, item in enumerate(value):
+        line = _line(value, index)
         if not isinstance(item, str) or not item.strip():
             err(
                 "blockers",
                 f"item {index + 1} should be text, got {_describe(item)}",
-                _line(value, index),
+                line,
             )
+            continue
+        problem = _bad_character(item.strip())
+        if problem:
+            err("blockers", f"item {index + 1} contains {problem}", line)
             continue
         result.append(item.strip())
     return result
